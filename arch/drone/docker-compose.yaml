@@ -1,0 +1,51 @@
+version: '3'
+services:
+  drone-server:
+    image: "drone/drone:1.6.5"
+    container_name: drone-server
+    ports:
+    - "8888:80"
+    networks:
+    - drone
+    env_file:
+    - ./secret.env  
+    environment: 
+    - DRONE_GITHUB_CLIENT_ID=be456f78c7391eae27e4
+    - DRONE_GITHUB_CLIENT_SECRET=268b1e4ab86877c2eedc69e59e698cffdcac5f99
+    - DRONE_SERVER_HOST=c76445cfc129.ngrok.io
+    - DRONE_DATABASE_DRIVER=postgres
+    - DRONE_DATABASE_DATASOURCE=postgres://admin:admin123@pg:5432/dronedb?sslmode=disable
+    depends_on: 
+    - pg
+  pg:
+    image: "postgres:10.14-alpine"
+    volumes: 
+    - pgdata:/var/lib/postgresql/data/pgdata
+    networks:
+    - drone
+    environment:
+    - POSTGRES_USER=admin
+    - POSTGRES_PASSWORD=admin123
+    - POSTGRES_DB=dronedb
+    - PGDATA=/var/lib/postgresql/data/pgdata
+  drone-runner:
+    image: drone/drone-runner-docker:1
+    ports:
+    - "3000:3000"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+    - ./secret.env  
+    environment:
+    - DRONE_RPC_HOST=drone-server
+    - DRONE_RPC_PROTO=http
+    depends_on:
+    - drone-server
+    networks:
+    - drone
+
+
+networks:
+  drone:
+volumes:
+  pgdata:
