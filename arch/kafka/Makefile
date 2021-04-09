@@ -1,3 +1,3 @@
 
 run:
-	docker-compose -f $(PWD)/docker-compose.yaml -p kafka up
+	docker-compose -f $(CURDIR)/docker-compose.yaml -p kafka up
